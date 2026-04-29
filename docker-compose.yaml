@@ -1,0 +1,16 @@
+services:
+  # PostgresSQL
+  postgres:
+    image: postgres:14.3
+    container_name: anylist_db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - nest_anylist_postgres_db_data:/var/lib/postgresql/data
+
+volumes:
+  nest_anylist_postgres_db_data:
