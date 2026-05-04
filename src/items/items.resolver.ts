@@ -1,16 +1,19 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { ItemsService } from './items.service';
 import { Item } from './entities/item.entity';
-import { CreateItemInput } from './dto/create-item.input';
-import { UpdateItemInput } from './dto/update-item.input';
+import { CreateItemInput } from './dto/inputs/create-item.input';
+import { UpdateItemInput } from './dto/inputs/update-item.input';
 
 @Resolver(() => Item)
 export class ItemsResolver {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Mutation(() => Item)
-  createItem(@Args('createItemInput') createItemInput: CreateItemInput) {
-    return this.itemsService.create(createItemInput);
+  createItem(
+    @Args('createItemInput', { type: () => CreateItemInput })
+    dto: CreateItemInput,
+  ): Promise<Item> {
+    return this.itemsService.create(dto);
   }
 
   @Query(() => [Item], { name: 'items' })
