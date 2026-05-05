@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dto/inputs/create-item.input';
 import { UpdateItemInput } from './dto/inputs/update-item.input';
 import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import { handleDBException } from './../common/helpers/errors.helper';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class ItemsService {
@@ -25,12 +30,22 @@ export class ItemsService {
     }
   }
 
-  findAll() {
-    return [];
+  async findAll(): Promise<Item[]> {
+    // TODO: filtrar, paginar
+    const items: Item[] = await this.itemsRepository.find();
+
+    return items;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} item`;
+  async findOne(id: string): Promise<Item> {
+    if (!isUUID(id))
+      throw new BadRequestException(`Id (${id}) is not a valid UUID`);
+
+    const item: Item | null = await this.itemsRepository.findOneBy({ id: id });
+
+    if (!item) throw new NotFoundException(`Item with id (${id}) not found`);
+
+    return item;
   }
 
   update(id: number, updateItemInput: UpdateItemInput) {
