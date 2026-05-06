@@ -30,12 +30,14 @@ export class ItemsResolver {
   }
 
   @Mutation(() => Item)
-  updateItem(@Args('updateItemInput') updateItemInput: UpdateItemInput) {
-    return this.itemsService.update(updateItemInput.id, updateItemInput);
+  updateItem(@Args('updateItemInput') dto: UpdateItemInput): Promise<Item> {
+    return this.itemsService.update(dto.id, dto);
   }
 
   @Mutation(() => Item)
-  removeItem(@Args('id', { type: () => Int }) id: number) {
+  removeItem(
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+  ): Promise<Item> {
     return this.itemsService.remove(id);
   }
 }

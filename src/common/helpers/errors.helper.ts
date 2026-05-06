@@ -3,6 +3,12 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { isUUID } from 'class-validator';
+
+export const isUuidException = (id: string): void => {
+  if (!isUUID(id))
+    throw new BadRequestException(`Id (${id}) is not a valid UUID`);
+};
 
 export const handleDBException = (
   loggerName: string = 'Logger',

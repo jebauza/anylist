@@ -8,7 +8,11 @@ import { CreateItemInput } from './dto/inputs/create-item.input';
 import { UpdateItemInput } from './dto/inputs/update-item.input';
 import { Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
-import { handleDBException } from './../common/helpers/errors.helper';
+import {
+  handleDBException,
+  isUuidException,
+} from './../common/helpers/errors.helper';
+import { removeNullFields } from './../common/helpers/dto.helper';
 import { isUUID } from 'class-validator';
 
 @Injectable()
@@ -38,8 +42,7 @@ export class ItemsService {
   }
 
   async findOne(id: string): Promise<Item> {
-    if (!isUUID(id))
-      throw new BadRequestException(`Id (${id}) is not a valid UUID`);
+    isUuidException(id);
 
     const item: Item | null = await this.itemsRepository.findOneBy({ id: id });
 
@@ -48,11 +51,37 @@ export class ItemsService {
     return item;
   }
 
-  update(id: number, updateItemInput: UpdateItemInput) {
-    return `This action updates a #${id} item`;
+  async update(id: string, dto: UpdateItemInput): Promise<Item> {
+    const item: Item = await this.findOne(id);
+
+    try {
+      // Not Null in DB
+      const cleanDto = removeNullFields(dto, ['name', 'quantity']);
+      Object.assign(item, cleanDto);
+
+      return await this.itemsRepository.save(item);
+    } catch (error) {
+      handleDBException('ItemsService', error);
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} item`;
+  async remove(id: string): Promise<Item> {
+    const item: Item = await this.findOne(id);
+    await this.itemsRepository.remove(item);
+
+    return { ...item, id };
+  }
+
+  async removeBoolean(id: string): Promise<boolean> {
+    // TODO: soft delete, integrida referencial
+    isUuidException(id);
+    const { affected } = await this.itemsRepository.delete(id);
+
+    if (affected === 0) {
+      throw new NotFoundException(`Item with id (${id}) not found`);
+    }
+
+    return true;
   }
 }
