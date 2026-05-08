@@ -21,7 +21,8 @@ export const handleDBException = (
 
   // PostgresSQL
   if (error.code === '23505') {
-    throw new BadRequestException(error.detail);
+    new Logger(loggerName).error(error);
+    throw new BadRequestException(error.detail.replace('Key ', ''));
   }
 
   // console.log(error);

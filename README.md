@@ -52,7 +52,15 @@ docker compose down
 npm install
 ```
 
-### 4. Start the application
+### 4. Run migrations
+
+Execute the pending migrations to create the database tables:
+
+```bash
+yarn migration:run
+```
+
+### 5. Start the application
 
 ```bash
 npm run start:dev
