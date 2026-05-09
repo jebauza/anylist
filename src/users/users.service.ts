@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { CreateUserInput } from './dto/create-user.input';
@@ -25,7 +25,7 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      handleDBException('UsersService', error);
+      handleDBException('UsersService->create', error);
       throw error;
     }
   }
@@ -38,6 +38,18 @@ export class UsersService {
 
   findOne(id: string) {
     throw new Error('UsersService-findOne not implemented.');
+  }
+
+  async findOneBy(
+    fields: FindOptionsWhere<User>,
+    select?: FindOptionsSelect<User>,
+  ): Promise<User | null> {
+    try {
+      return await this.usersRepository.findOne({ where: fields, select });
+    } catch (error) {
+      handleDBException('UsersService->findOneBy', error);
+      throw error;
+    }
   }
 
   update(id: number, updateUserInput: UpdateUserInput) {
