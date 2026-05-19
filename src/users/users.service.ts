@@ -7,6 +7,7 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
 import { handleDBException } from '../common/helpers/errors.helper';
+import { ValidRoles } from './../auth/enums/valid-roles.enum';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +20,7 @@ export class UsersService {
     try {
       const user = this.usersRepository.create({
         ...dto,
-        password: bcrypt.hashSync(dto.password, 10) as string,
+        password: bcrypt.hashSync(dto.password, 10),
       });
       await this.usersRepository.save(user);
 
@@ -30,10 +31,14 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    const users: User[] = await this.usersRepository.find();
+  async findAll(roles: ValidRoles[] = []): Promise<User[]> {
+    if (roles.length === 0) return await this.usersRepository.find();
 
-    return users;
+    return await this.usersRepository
+      .createQueryBuilder()
+      .andWhere('ARRAY[roles] && ARRAY[:...filterRoles]')
+      .setParameter('filterRoles', roles)
+      .getMany();
   }
 
   async findOneById(id: string): Promise<User> {
@@ -60,7 +65,14 @@ export class UsersService {
     throw new Error('UsersService-update not implemented.');
   }
 
-  block(id: string) {
+  async block(id: string): Promise<User> {
+    const user = await this.findOneById(id);
+    user.isActive = false;
+
+    return await this.usersRepository.save(user);
+  }
+
+  remove(id: number) {
     throw new Error('UsersService-remove not implemented.');
   }
 }
