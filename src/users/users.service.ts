@@ -36,8 +36,12 @@ export class UsersService {
     return users;
   }
 
-  findOne(id: string) {
-    throw new Error('UsersService-findOne not implemented.');
+  async findOneById(id: string): Promise<User> {
+    try {
+      return await this.usersRepository.findOneByOrFail({ id });
+    } catch (error) {
+      throw new NotFoundException(`User with id: ${id} not found.`);
+    }
   }
 
   async findOneBy(

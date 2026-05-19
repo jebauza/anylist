@@ -1,17 +1,27 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { SignupInput } from './dto/inputs/signup.input';
 import { UsersService } from './../users/users.service';
 import { AuthResponse } from './types/auth-response.type';
 import { LoginInput } from './dto/inputs/login.input';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  private getJwtToken(userId: string) {
+    const payload = { id: userId };
+    return this.jwtService.sign(payload);
+  }
 
   async signup(dto: SignupInput): Promise<AuthResponse> {
     const user = await this.usersService.create(dto);
-    const token = 'token';
+    const token = this.getJwtToken(user.id);
 
     return { token, user };
   }
@@ -35,24 +45,25 @@ export class AuthService {
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Invalid credentials (password)');
 
-    const token = 'token';
+    const token = this.getJwtToken(user.id);
 
     return { token, user };
   }
 
-  // findAll() {
-  //   return `This action returns all auth`;
-  // }
+  async validateUser(id: string): Promise<User> {
+    const user = await this.usersService.findOneById(id);
+    if (!user.isActive) throw new UnauthorizedException('User is not active');
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} auth`;
-  // }
+    delete (user as Partial<User>).password;
+    return user;
+  }
 
-  // update(id: number, updateAuthInput: UpdateAuthInput) {
-  //   return `This action updates a #${id} auth`;
-  // }
+  me(user: User): User {
+    return user;
+  }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} auth`;
-  // }
+  revalidateToken(user: User): AuthResponse {
+    const token = this.getJwtToken(user.id);
+    return { token, user };
+  }
 }
