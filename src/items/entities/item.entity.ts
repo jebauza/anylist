@@ -9,14 +9,14 @@ export class Item {
   id!: string;
 
   @Field(() => String)
-  @Column('varchar', { length: 255, unique: true })
+  @Column('varchar', { name: 'name', length: 255, unique: true })
   name!: string;
 
   @Field(() => Float)
-  @Column('float', { default: 0 })
+  @Column('float', { name: 'quantity', default: 0 })
   quantity!: number;
 
   @Field(() => String, { nullable: true })
-  @Column('varchar', { length: 20, nullable: true })
+  @Column('varchar', { name: 'quantity_units', length: 20, nullable: true })
   quantityUnits?: string;
 }

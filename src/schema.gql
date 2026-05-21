@@ -15,6 +15,7 @@ type User {
   fullName: String!
   roles: [String!]!
   isActive: Boolean!
+  lastUpdateBy: User
 }
 
 type AuthResponse {

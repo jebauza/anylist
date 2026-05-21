@@ -32,7 +32,11 @@ export class UsersService {
   }
 
   async findAll(roles: ValidRoles[] = []): Promise<User[]> {
-    if (roles.length === 0) return await this.usersRepository.find();
+    if (roles.length === 0)
+      return await this.usersRepository.find({
+        // TODO: Lazy in entity
+        // relations: { lastUpdateBy: true },
+      });
 
     return await this.usersRepository
       .createQueryBuilder()
@@ -65,9 +69,10 @@ export class UsersService {
     throw new Error('UsersService-update not implemented.');
   }
 
-  async block(id: string): Promise<User> {
+  async block(id: string, adminUser: User): Promise<User> {
     const user = await this.findOneById(id);
     user.isActive = false;
+    user.lastUpdateBy = adminUser;
 
     return await this.usersRepository.save(user);
   }
