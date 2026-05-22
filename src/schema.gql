@@ -46,6 +46,7 @@ type Mutation {
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): Item!
   blockUser(id: ID!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
   signup(signupInput: SignupInput!): AuthResponse!
   login(loginInput: LoginInput!): AuthResponse!
 }
@@ -70,6 +71,24 @@ input UpdateItemInput {
 
   """Quantity units of the item"""
   quantityUnits: String
+  id: ID!
+}
+
+input UpdateUserInput {
+  """Email of the user"""
+  email: String
+
+  """Password of the user"""
+  password: String
+
+  """Full name of the user"""
+  fullName: String
+
+  """Roles of the user"""
+  roles: [ValidRoles!]
+
+  """Is active of the user"""
+  isActive: Boolean
   id: ID!
 }
 

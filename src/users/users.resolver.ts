@@ -3,7 +3,7 @@ import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
-import { UpdateUserInput } from './dto/update-user.input';
+import { UpdateUserInput } from './dto/inputs/update-user.input';
 import { ValidRolesArgs } from './dto/args/roles.arg';
 import { JwtAuthGuard } from './../auth/guards/jwt-auth.guard';
 import { CurrentUser } from './../auth/decorators/current-user.decorator';
@@ -30,16 +30,19 @@ export class UsersResolver {
     return this.usersService.findOneById(id);
   }
 
-  // @Mutation(() => User)
-  // updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-  //   return this.usersService.update(updateUserInput.id, updateUserInput);
-  // }
-
   @Mutation(() => User, { name: 'blockUser' })
   blockUser(
-    @CurrentUser([ValidRoles.admin]) user: User,
+    @CurrentUser([ValidRoles.admin]) authUser: User,
     @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
   ): Promise<User> {
-    return this.usersService.block(id, user);
+    return this.usersService.block(id, authUser);
+  }
+
+  @Mutation(() => User, { name: 'updateUser' })
+  updateUser(
+    @CurrentUser([ValidRoles.admin]) authUser: User,
+    @Args('updateUserInput') dto: UpdateUserInput,
+  ): Promise<User> {
+    return this.usersService.update(dto.id, dto, authUser);
   }
 }

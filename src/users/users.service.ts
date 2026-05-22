@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { CreateUserInput } from './dto/create-user.input';
-import { UpdateUserInput } from './dto/update-user.input';
+import { CreateUserInput } from './dto/inputs/create-user.input';
+import { UpdateUserInput } from './dto/inputs/update-user.input';
 import { User } from './entities/user.entity';
 import { handleDBException } from '../common/helpers/errors.helper';
 import { ValidRoles } from './../auth/enums/valid-roles.enum';
+import { removeNullFields } from './../common/helpers/dto.helper';
 
 @Injectable()
 export class UsersService {
@@ -65,8 +66,29 @@ export class UsersService {
     }
   }
 
-  update(id: number, updateUserInput: UpdateUserInput) {
-    throw new Error('UsersService-update not implemented.');
+  async update(
+    id: string,
+    dto: UpdateUserInput,
+    updateBy: User,
+  ): Promise<User> {
+    const user = await this.findOneById(id);
+
+    try {
+      const cleanDto = removeNullFields(dto, [
+        'email',
+        'fullName',
+        'roles',
+        'isActive',
+      ]);
+      const { password, ...userData } = cleanDto;
+      Object.assign(user, userData, { lastUpdateBy: updateBy });
+      if (password) user.password = bcrypt.hashSync(password, 10);
+
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      handleDBException('UsersService->update', error);
+      throw error;
+    }
   }
 
   async block(id: string, adminUser: User): Promise<User> {

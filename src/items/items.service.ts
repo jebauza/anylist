@@ -61,7 +61,7 @@ export class ItemsService {
 
       return await this.itemsRepository.save(item);
     } catch (error) {
-      handleDBException('ItemsService', error);
+      handleDBException('ItemsService->update', error);
       throw error;
     }
   }
