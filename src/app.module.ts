@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { join } from 'path';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
@@ -10,7 +10,6 @@ import { ItemsModule } from './items/items.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './auth/interfaces/jwt-payload.interface';
 
 @Module({
   imports: [

@@ -4,8 +4,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { Item } from './../../items/entities/item.entity';
 
 @ObjectType()
 @Entity({ name: 'users' })
@@ -40,4 +43,8 @@ export class User {
     lazy: true,
   })
   lastUpdateBy?: User;
+
+  @Field(() => [Item])
+  @OneToMany(() => Item, (item) => item.user)
+  items!: Item[];
 }

@@ -2,13 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Item {
-  id: ID!
-  name: String!
-  quantity: Float!
-  quantityUnits: String
-}
-
 type User {
   id: ID!
   email: String!
@@ -16,6 +9,14 @@ type User {
   roles: [String!]!
   isActive: Boolean!
   lastUpdateBy: User
+  items: [Item!]!
+}
+
+type Item {
+  id: ID!
+  name: String!
+  unit: String
+  user: User
 }
 
 type AuthResponse {
@@ -92,21 +93,15 @@ input CreateItemInput {
   """Name of the item"""
   name: String!
 
-  """Quantity of the item"""
-  quantity: Float!
-
-  """Quantity units of the item"""
-  quantityUnits: String
+  """Unit of the item"""
+  unit: String
 }
 
 input UpdateItemInput {
   """Name of the item"""
   name: String
 
-  """Quantity of the item"""
-  quantity: Float
-
-  """Quantity units of the item"""
-  quantityUnits: String
+  """Unit of the item"""
+  unit: String
   id: ID!
 }

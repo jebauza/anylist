@@ -1,22 +1,43 @@
-import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { User } from 'src/users/entities/user.entity';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 @ObjectType()
 @Entity({ name: 'items' })
+@Unique(['name', 'unit'])
 export class Item {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Field(() => String)
-  @Column('varchar', { name: 'name', length: 255, unique: true })
+  @Column('varchar', { name: 'name', length: 255 })
   name!: string;
 
-  @Field(() => Float)
-  @Column('float', { name: 'quantity', default: 0 })
-  quantity!: number;
-
   @Field(() => String, { nullable: true })
-  @Column('varchar', { name: 'quantity_units', length: 20, nullable: true })
-  quantityUnits?: string;
+  @Column('varchar', { name: 'unit', length: 20, default: '' })
+  unit!: string;
+
+  @Field(() => User, { nullable: true })
+  @JoinColumn({ name: 'user_id' })
+  @Index()
+  @ManyToOne(() => User, (user) => user.items, { nullable: false })
+  user?: User;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  normalize() {
+    this.name = this.name.trim().toLowerCase();
+    this.unit = this.unit.trim().toLowerCase();
+  }
 }

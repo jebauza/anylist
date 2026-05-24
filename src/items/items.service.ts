@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dto/inputs/create-item.input';
 import { UpdateItemInput } from './dto/inputs/update-item.input';
@@ -13,7 +9,7 @@ import {
   isUuidException,
 } from './../common/helpers/errors.helper';
 import { removeNullFields } from './../common/helpers/dto.helper';
-import { isUUID } from 'class-validator';
+import { User } from './../users/entities/user.entity';
 
 @Injectable()
 export class ItemsService {
@@ -22,14 +18,18 @@ export class ItemsService {
     private readonly itemsRepository: Repository<Item>,
   ) {}
 
-  async create(dto: CreateItemInput): Promise<Item> {
+  async create(dto: CreateItemInput, user: User): Promise<Item> {
     try {
-      const item: Item = this.itemsRepository.create(dto);
+      const item: Item = this.itemsRepository.create({
+        ...dto,
+        unit: dto.unit ? dto.unit.trim().toLowerCase() : '',
+        user,
+      });
       await this.itemsRepository.save(item);
 
       return item;
     } catch (error) {
-      handleDBException('ItemsService', error);
+      handleDBException('ItemsService->create', error);
       throw error;
     }
   }
@@ -56,7 +56,7 @@ export class ItemsService {
 
     try {
       // Not Null in DB
-      const cleanDto = removeNullFields(dto, ['name', 'quantity']);
+      const cleanDto = removeNullFields(dto, ['name', 'unit']);
       Object.assign(item, cleanDto);
 
       return await this.itemsRepository.save(item);
@@ -70,7 +70,7 @@ export class ItemsService {
     const item: Item = await this.findOne(id);
     await this.itemsRepository.remove(item);
 
-    return { ...item, id };
+    return Object.assign(item, { id });
   }
 
   async removeBoolean(id: string): Promise<boolean> {

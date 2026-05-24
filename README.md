@@ -57,7 +57,7 @@ npm install
 Execute the pending migrations to create the database tables:
 
 ```bash
-yarn migration:run
+npm run migration:run
 ```
 
 ### 5. Start the application
