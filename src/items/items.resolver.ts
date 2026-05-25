@@ -25,26 +25,43 @@ export class ItemsResolver {
   }
 
   @Query(() => [Item], { name: 'items' })
-  findAll(): Promise<Item[]> {
-    return this.itemsService.findAll();
+  findAll(
+    @CurrentUser()
+    authUser: User,
+  ): Promise<Item[]> {
+    return this.itemsService.findAll(authUser);
   }
 
   @Query(() => Item, { name: 'item' })
   findOne(
-    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+    @CurrentUser()
+    authUser: User,
+
+    @Args('id', { type: () => ID }, ParseUUIDPipe)
+    id: string,
   ): Promise<Item> {
-    return this.itemsService.findOne(id);
+    return this.itemsService.findOne(id, authUser);
   }
 
   @Mutation(() => Item)
-  updateItem(@Args('updateItemInput') dto: UpdateItemInput): Promise<Item> {
-    return this.itemsService.update(dto.id, dto);
+  updateItem(
+    @CurrentUser()
+    authUser: User,
+
+    @Args('updateItemInput')
+    dto: UpdateItemInput,
+  ): Promise<Item> {
+    return this.itemsService.update(dto.id, dto, authUser);
   }
 
   @Mutation(() => Item)
   removeItem(
-    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+    @CurrentUser()
+    authUser: User,
+
+    @Args('id', { type: () => ID }, ParseUUIDPipe)
+    id: string,
   ): Promise<Item> {
-    return this.itemsService.remove(id);
+    return this.itemsService.remove(id, authUser);
   }
 }

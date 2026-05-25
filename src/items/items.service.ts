@@ -34,25 +34,37 @@ export class ItemsService {
     }
   }
 
-  async findAll(): Promise<Item[]> {
-    // TODO: filtrar, paginar
-    const items: Item[] = await this.itemsRepository.find();
+  async findAll(user: User): Promise<Item[]> {
+    const items = await this.itemsRepository.find({
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
+    });
 
     return items;
   }
 
-  async findOne(id: string): Promise<Item> {
+  async findOne(id: string, user?: User): Promise<Item> {
     isUuidException(id);
 
-    const item: Item | null = await this.itemsRepository.findOneBy({ id: id });
+    const item: Item | null = await this.itemsRepository.findOne({
+      where: {
+        id,
+        ...(user && { user: { id: user.id } }),
+      },
+    });
 
-    if (!item) throw new NotFoundException(`Item with id (${id}) not found`);
+    if (!item) throw new NotFoundException(`Item ${id} not found or not yours`);
+
+    // item.user = user;
 
     return item;
   }
 
-  async update(id: string, dto: UpdateItemInput): Promise<Item> {
-    const item: Item = await this.findOne(id);
+  async update(id: string, dto: UpdateItemInput, user: User): Promise<Item> {
+    const item: Item = await this.findOne(id, user);
 
     try {
       // Not Null in DB
@@ -66,8 +78,8 @@ export class ItemsService {
     }
   }
 
-  async remove(id: string): Promise<Item> {
-    const item: Item = await this.findOne(id);
+  async remove(id: string, user?: User): Promise<Item> {
+    const item: Item = await this.findOne(id, user);
     await this.itemsRepository.remove(item);
 
     return Object.assign(item, { id });
