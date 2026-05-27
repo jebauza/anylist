@@ -12,6 +12,8 @@ import { removeNullFields } from './../common/helpers/dto.helper';
 
 @Injectable()
 export class UsersService {
+  private readonly loggerName: string = 'UsersService';
+
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -27,7 +29,7 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      handleDBException('UsersService->create', error);
+      handleDBException(`${this.loggerName}->create`, error);
       throw error;
     }
   }
@@ -61,7 +63,7 @@ export class UsersService {
     try {
       return await this.usersRepository.findOne({ where: fields, select });
     } catch (error) {
-      handleDBException('UsersService->findOneBy', error);
+      handleDBException(`${this.loggerName}->findOneBy`, error);
       throw error;
     }
   }
@@ -86,7 +88,7 @@ export class UsersService {
 
       return await this.usersRepository.save(user);
     } catch (error) {
-      handleDBException('UsersService->update', error);
+      handleDBException(`${this.loggerName}->update`, error);
       throw error;
     }
   }
@@ -101,5 +103,35 @@ export class UsersService {
 
   remove(id: number) {
     throw new Error('UsersService-remove not implemented.');
+  }
+
+  async createMany(data: CreateUserInput[], createdBy?: User): Promise<void> {
+    const CHUNK_SIZE = 500;
+
+    try {
+      const users = data.map((dto) =>
+        this.usersRepository.create({
+          ...dto,
+          password: bcrypt.hashSync(dto.password, 10),
+          lastUpdateBy: createdBy,
+        }),
+      );
+
+      for (let i = 0; i < users.length; i += CHUNK_SIZE) {
+        await this.usersRepository.insert(users.slice(i, i + CHUNK_SIZE));
+      }
+    } catch (error) {
+      handleDBException(`${this.loggerName}->createMany`, error);
+    }
+  }
+
+  private async deleteAll() {
+    const query = this.usersRepository.createQueryBuilder('user');
+
+    try {
+      await query.delete().where({}).execute();
+    } catch (error) {
+      handleDBException(`${this.loggerName}->deleteAll`, error);
+    }
   }
 }

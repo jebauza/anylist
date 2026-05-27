@@ -66,17 +66,19 @@ npm run migration:run
 npm run start:dev
 ```
 
-The API will be available at `http://localhost:3000/graphql`
+The API will be available at `http://localhost:3000/graphql`. The project uses **Apollo Sandbox** to explore the schema and interact with the API.
 
----
+### 6. Seed the database (optional)
 
-## GraphQL Playground
+With the app running, execute the seed mutation from the playground:
 
-The project uses **Apollo Sandbox** to explore the schema and interact with the API. Access it at:
-
+```graphql
+mutation {
+  executeSeed
+}
 ```
-http://localhost:3000/graphql
-```
+
+> **Note:** The seed is blocked in production (`STAGE=prod`).
 
 ---
 

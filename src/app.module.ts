@@ -10,13 +10,13 @@ import { ItemsModule } from './items/items.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
 
     TypeOrmModule.forRoot({
-      ssl: process.env.STAGE === 'prod' || process.env.DB_SSL === 'true',
       type: 'postgres',
       host: process.env.DB_HOST,
       port: +(process.env.DB_PORT ?? '5432'),
@@ -24,6 +24,11 @@ import { JwtService } from '@nestjs/jwt';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       schema: process.env.DB_SCHEMA ?? 'public',
+
+      ssl:
+        process.env.DB_SSL !== undefined
+          ? process.env.DB_SSL === 'true'
+          : process.env.STAGE === 'prod',
 
       autoLoadEntities: true,
       synchronize: false,
@@ -74,6 +79,8 @@ import { JwtService } from '@nestjs/jwt';
     UsersModule,
 
     AuthModule,
+
+    SeedModule,
   ],
   controllers: [],
   providers: [],

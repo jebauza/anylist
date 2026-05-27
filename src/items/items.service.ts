@@ -13,6 +13,8 @@ import { User } from './../users/entities/user.entity';
 
 @Injectable()
 export class ItemsService {
+  private readonly loggerName: string = 'ProductsService';
+
   constructor(
     @InjectRepository(Item)
     private readonly itemsRepository: Repository<Item>,
@@ -29,7 +31,7 @@ export class ItemsService {
 
       return item;
     } catch (error) {
-      handleDBException('ItemsService->create', error);
+      handleDBException(`${this.loggerName}->create`, error);
       throw error;
     }
   }
@@ -73,7 +75,7 @@ export class ItemsService {
 
       return await this.itemsRepository.save(item);
     } catch (error) {
-      handleDBException('ItemsService->update', error);
+      handleDBException(`${this.loggerName}->update`, error);
       throw error;
     }
   }
@@ -101,5 +103,34 @@ export class ItemsService {
     return await this.itemsRepository.count({
       where: { user: { id: user.id } },
     });
+  }
+
+  async createMany(data: CreateItemInput[], createdBy: User): Promise<void> {
+    const CHUNK_SIZE = 500;
+
+    try {
+      const items = data.map((dto) =>
+        this.itemsRepository.create({
+          ...dto,
+          user: createdBy,
+        }),
+      );
+
+      for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+        await this.itemsRepository.insert(items.slice(i, i + CHUNK_SIZE));
+      }
+    } catch (error) {
+      handleDBException(`${this.loggerName}->createMany`, error);
+    }
+  }
+
+  private async deleteAll() {
+    const query = this.itemsRepository.createQueryBuilder('item');
+
+    try {
+      await query.delete().where({}).execute();
+    } catch (error) {
+      handleDBException(`${this.loggerName}->deleteAll`, error);
+    }
   }
 }
