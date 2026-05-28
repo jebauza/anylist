@@ -9,8 +9,17 @@ type User {
   roles: [String!]!
   isActive: Boolean!
   lastUpdateBy: User
-  items: [Item!]!
   itemCount: Int!
+  items(
+    """Skip count (default: 0, min: 0)"""
+    offset: Int = 0
+
+    """Page size (default: 50, min: 1, max: 100)"""
+    limit: Int = 50
+
+    """Search text"""
+    search: String
+  ): [Item!]!
 }
 
 type Item {
@@ -30,9 +39,28 @@ type AuthResponse {
 type Query {
   me: User!
   revaliteToken: AuthResponse!
-  users(roles: [ValidRoles!] = []): [User!]!
+  users(
+    """Skip count (default: 0, min: 0)"""
+    offset: Int = 0
+
+    """Page size (default: 50, min: 1, max: 100)"""
+    limit: Int = 50
+    roles: [ValidRoles!] = []
+
+    """Search text"""
+    search: String
+  ): [User!]!
   user(id: ID!): User!
-  items: [Item!]!
+  items(
+    """Skip count (default: 0, min: 0)"""
+    offset: Int = 0
+
+    """Page size (default: 50, min: 1, max: 100)"""
+    limit: Int = 50
+
+    """Search text"""
+    search: String
+  ): [Item!]!
   item(id: ID!): Item!
 }
 

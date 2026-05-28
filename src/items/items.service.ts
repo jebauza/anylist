@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateItemInput } from './dto/inputs/create-item.input';
 import { UpdateItemInput } from './dto/inputs/update-item.input';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Item } from './entities/item.entity';
 import {
   handleDBException,
@@ -10,6 +10,7 @@ import {
 } from './../common/helpers/errors.helper';
 import { removeNullFields } from './../common/helpers/dto.helper';
 import { User } from './../users/entities/user.entity';
+import { PaginationArgs } from 'src/common/dto/args/pagination.args';
 
 @Injectable()
 export class ItemsService {
@@ -46,6 +47,40 @@ export class ItemsService {
     });
 
     return items;
+  }
+
+  async pagination(
+    dto: PaginationArgs,
+    user: User,
+    search?: string,
+  ): Promise<Item[]> {
+    const { offset, limit } = dto;
+
+    // const items = await this.itemsRepository.find({
+    //   relations: {
+    //     user: true,
+    //   },
+    //   where: {
+    //     user: { id: user.id },
+    //     ...(search && { name: ILike(`%${search}%`) }),
+    //   },
+    //   skip: offset,
+    //   take: limit,
+    //   order: { name: 'ASC' },
+    // });
+
+    const query = this.itemsRepository
+      .createQueryBuilder()
+      .where(`"user_id" = :userId`, { userId: user.id })
+      .take(limit)
+      .skip(offset)
+      .orderBy('name', 'ASC');
+
+    if (search) {
+      query.andWhere(`"name" ILIKE :search`, { search: `%${search}%` });
+    }
+
+    return query.getMany();
   }
 
   async findOne(id: string, user?: User): Promise<Item> {

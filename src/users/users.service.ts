@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  Brackets,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { CreateUserInput } from './dto/inputs/create-user.input';
@@ -9,6 +14,7 @@ import { User } from './entities/user.entity';
 import { handleDBException } from '../common/helpers/errors.helper';
 import { ValidRoles } from './../auth/enums/valid-roles.enum';
 import { removeNullFields } from './../common/helpers/dto.helper';
+import { PaginationArgs } from './../common/dto/args/pagination.args';
 
 @Injectable()
 export class UsersService {
@@ -48,10 +54,46 @@ export class UsersService {
       .getMany();
   }
 
+  async pagination(
+    paginationDto: PaginationArgs,
+    roles: ValidRoles[] = [],
+    search?: string,
+  ): Promise<User[]> {
+    const { offset, limit } = paginationDto;
+    const query = this.usersRepository
+      .createQueryBuilder()
+      .take(limit)
+      .skip(offset)
+      .orderBy('email', 'ASC');
+
+    if (roles.length > 0) {
+      query
+        .andWhere('ARRAY[roles] && ARRAY[:...filterRoles]')
+        .setParameter('filterRoles', roles);
+    }
+
+    if (search) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where(`"full_name" ILIKE :search`, { search: `%${search}%` })
+            .orWhere(`"email" ILIKE :search`, { search: `%${search}%` })
+            .orWhere(`id::text ILIKE :search`, { search: `%${search}%` });
+        }),
+      );
+
+      // query.andWhere(
+      //   `("full_name" ILIKE :search OR "email" ILIKE :search OR id::text ILIKE :search)`,
+      //   { search: `%${search}%` },
+      // );
+    }
+
+    return await query.getMany();
+  }
+
   async findOneById(id: string): Promise<User> {
     try {
       return await this.usersRepository.findOneByOrFail({ id });
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`User with id: ${id} not found.`);
     }
   }
@@ -101,8 +143,8 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
-  remove(id: number) {
-    throw new Error('UsersService-remove not implemented.');
+  remove(id: string) {
+    throw new Error(`UsersService-remove not implemented. id: ${id}`);
   }
 
   async createMany(data: CreateUserInput[], createdBy?: User): Promise<void> {

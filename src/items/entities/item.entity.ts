@@ -31,7 +31,10 @@ export class Item {
   @Field(() => User, { nullable: true })
   @JoinColumn({ name: 'user_id' })
   @Index()
-  @ManyToOne(() => User, (user) => user.items, { nullable: false, lazy: true })
+  @ManyToOne(() => User, (user) => user.items, {
+    nullable: false,
+    lazy: true, // TypeORM loads the relation automatically when requested by GraphQL
+  })
   user?: User;
 
   @BeforeInsert()
