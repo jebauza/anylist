@@ -14,10 +14,10 @@ import {
 
 @ObjectType()
 @Entity({ name: 'items' })
-@Unique(['name', 'unit'])
+@Unique('UQ_items_name_unit', ['name', 'unit'])
 export class Item {
   @Field(() => ID)
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_items_id' })
   id!: string;
 
   @Field(() => String)
@@ -29,8 +29,8 @@ export class Item {
   unit!: string;
 
   @Field(() => User, { nullable: true })
-  @JoinColumn({ name: 'user_id' })
-  @Index()
+  @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'FK_items_user_id' })
+  @Index('IDX_items_user_id')
   @ManyToOne(() => User, (user) => user.items, {
     nullable: false,
     lazy: true, // TypeORM loads the relation automatically when requested by GraphQL

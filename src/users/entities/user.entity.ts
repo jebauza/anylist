@@ -2,6 +2,7 @@ import { ObjectType, Field, ID } from '@nestjs/graphql';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -9,16 +10,18 @@ import {
 } from 'typeorm';
 
 import { Item } from './../../items/entities/item.entity';
+import { List } from './../../lists/entities/list.entity';
 
 @ObjectType()
 @Entity({ name: 'users' })
 export class User {
   @Field(() => ID)
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_users_id' })
   id!: string;
 
   @Field(() => String)
-  @Column('varchar', { name: 'email', length: 100, unique: true })
+  @Index('UQ_users_email', { unique: true })
+  @Column('varchar', { name: 'email', length: 100 })
   email!: string;
 
   @Column('varchar', { name: 'password', length: 100 })
@@ -37,7 +40,10 @@ export class User {
   isActive!: boolean;
 
   @Field(() => User, { nullable: true })
-  @JoinColumn({ name: 'last_update_by' })
+  @JoinColumn({
+    name: 'last_update_by',
+    foreignKeyConstraintName: 'FK_users_last_update_by',
+  })
   @ManyToOne(() => User, (user) => user.lastUpdateBy, {
     nullable: true,
     lazy: true,
@@ -47,4 +53,7 @@ export class User {
   // @Field(() => [Item])
   @OneToMany(() => Item, (item) => item.user, { lazy: true })
   items!: Item[];
+
+  @OneToMany(() => List, (list) => list.user, { lazy: true })
+  lists!: List[];
 }
