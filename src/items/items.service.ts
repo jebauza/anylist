@@ -80,7 +80,7 @@ export class ItemsService {
       query.andWhere(`"name" ILIKE :search`, { search: `%${search}%` });
     }
 
-    return query.getMany();
+    return await query.getMany();
   }
 
   async findOne(id: string, user?: User): Promise<Item> {
@@ -119,7 +119,7 @@ export class ItemsService {
     const item: Item = await this.findOne(id, user);
     await this.itemsRepository.remove(item);
 
-    return Object.assign(item, { id });
+    return Object.assign(item, { id, user });
   }
 
   async removeBoolean(id: string): Promise<boolean> {
