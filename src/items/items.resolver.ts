@@ -18,9 +18,7 @@ export class ItemsResolver {
 
   @Mutation(() => Item, { name: 'createItem' })
   createItem(
-    @CurrentUser()
-    authUser: User,
-
+    @CurrentUser() authUser: User,
     @Args('createItemInput', { type: () => CreateItemInput })
     dto: CreateItemInput,
   ): Promise<Item> {
@@ -29,9 +27,7 @@ export class ItemsResolver {
 
   @Query(() => [Item], { name: 'items' })
   findAll(
-    @CurrentUser()
-    authUser: User,
-
+    @CurrentUser() authUser: User,
     @Args() paginationDto: PaginationArgs,
     @Args() searchDto: SearchArgs,
   ): Promise<Item[]> {
@@ -46,33 +42,24 @@ export class ItemsResolver {
 
   @Query(() => Item, { name: 'item' })
   findOne(
-    @CurrentUser()
-    authUser: User,
-
-    @Args('id', { type: () => ID }, ParseUUIDPipe)
-    id: string,
+    @CurrentUser() authUser: User,
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
   ): Promise<Item> {
     return this.itemsService.findOne(id, authUser);
   }
 
   @Mutation(() => Item)
   updateItem(
-    @CurrentUser()
-    authUser: User,
-
-    @Args('updateItemInput')
-    dto: UpdateItemInput,
+    @CurrentUser() authUser: User,
+    @Args('updateItemInput') dto: UpdateItemInput,
   ): Promise<Item> {
     return this.itemsService.update(dto.id, dto, authUser);
   }
 
   @Mutation(() => Item)
   removeItem(
-    @CurrentUser()
-    authUser: User,
-
-    @Args('id', { type: () => ID }, ParseUUIDPipe)
-    id: string,
+    @CurrentUser() authUser: User,
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
   ): Promise<Item> {
     return this.itemsService.remove(id, authUser);
   }

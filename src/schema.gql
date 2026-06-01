@@ -31,6 +31,17 @@ type User {
     """Search text"""
     search: String
   ): [Item!]!
+  listCount: Int!
+  lists(
+    """Skip count (default: 0, min: 0)"""
+    offset: Int = 0
+
+    """Page size (default: 50, min: 1, max: 100)"""
+    limit: Int = 50
+
+    """Search text"""
+    search: String
+  ): [List!]!
 }
 
 type Item {
@@ -101,12 +112,12 @@ type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): Item!
-
-  """Execute seed"""
-  executeSeed: Boolean!
   createList(createListInput: CreateListInput!): List!
   updateList(updateListInput: UpdateListInput!): List!
   removeList(id: ID!): List!
+
+  """Execute seed"""
+  executeSeed: Boolean!
 }
 
 input SignupInput {

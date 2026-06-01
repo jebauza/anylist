@@ -78,7 +78,7 @@ export class ListsService {
 
     try {
       const cleanDto = removeNullFields(dto, ['name']);
-      Object.assign(list, cleanDto);
+      Object.assign(list, cleanDto, { id });
 
       return await this.listsRepository.save(list);
     } catch (error) {
@@ -92,5 +92,11 @@ export class ListsService {
     await this.listsRepository.remove(list);
 
     return Object.assign(list, { id, user });
+  }
+
+  async countListsByUser(user: User): Promise<number> {
+    return await this.listsRepository.count({
+      where: { user: { id: user.id } },
+    });
   }
 }

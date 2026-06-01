@@ -49,7 +49,7 @@ export class ListsResolver {
   updateList(
     @CurrentUser() authUser: User,
     @Args('updateListInput') dto: UpdateListInput,
-  ) {
+  ): Promise<List> {
     return this.listsService.update(dto.id, dto, authUser);
   }
 

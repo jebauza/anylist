@@ -106,7 +106,7 @@ export class ItemsService {
     try {
       // Not Null in DB
       const cleanDto = removeNullFields(dto, ['name', 'unit']);
-      Object.assign(item, cleanDto);
+      Object.assign(item, cleanDto, { id });
 
       return await this.itemsRepository.save(item);
     } catch (error) {
