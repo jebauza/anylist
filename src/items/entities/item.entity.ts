@@ -1,5 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { User } from 'src/users/entities/user.entity';
+import { ItemList } from '../../item-list/entities/item-list.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -8,6 +9,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -36,6 +38,9 @@ export class Item {
     lazy: true, // TypeORM loads the relation automatically when requested by GraphQL
   })
   user?: User;
+
+  @OneToMany(() => ItemList, (itemList) => itemList.item, { lazy: true })
+  listDetails!: ItemList[];
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -93,7 +93,8 @@ export class ItemsService {
       },
     });
 
-    if (!item) throw new NotFoundException(`Item ${id} not found or not yours`);
+    if (!item)
+      throw new NotFoundException(`Item_id (${id}) not found or not yours`);
 
     // item.user = user;
 

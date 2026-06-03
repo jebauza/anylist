@@ -5,10 +5,12 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { User } from './../../users/entities/user.entity';
+import { ItemList } from './../../item-list/entities/item-list.entity';
 
 @ObjectType()
 @Entity('lists')
@@ -29,4 +31,8 @@ export class List {
     lazy: true,
   })
   user!: User;
+
+  @Field(() => [ItemList], { description: 'The items in the list' })
+  @OneToMany(() => ItemList, (itemList) => itemList.list, { lazy: true })
+  itemDetails!: ItemList[];
 }

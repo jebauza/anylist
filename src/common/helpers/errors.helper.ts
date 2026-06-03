@@ -2,6 +2,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 
@@ -14,18 +15,33 @@ export const handleDBException = (
   loggerName: string = 'Logger',
   error: any,
 ): never => {
-  // MariaDB or MySQL
-  if (error.code === 'ER_DUP_ENTRY') {
-    throw new BadRequestException(error.sqlMessage);
-  }
+  // handleMySQLException(loggerName, error);
+  handlePostgreSQLException(loggerName, error);
 
-  // PostgresSQL
+  new Logger(loggerName).error(error);
+  throw new InternalServerErrorException('Internal server error');
+};
+
+const handlePostgreSQLException = (loggerName: string, error: any): void => {
+  // 23505: unique constraint violation
   if (error.code === '23505') {
     new Logger(loggerName).error(error);
     throw new BadRequestException(error.detail.replace('Key ', ''));
   }
 
-  // console.log(error);
-  new Logger(loggerName).error(error);
-  throw new InternalServerErrorException('Internal server error');
+  // 23503: foreign key constraint violation
+  if (error.code === '23503') {
+    new Logger(loggerName).error(error);
+    throw new NotFoundException(
+      error.detail.replace('Key ', '').replace('table ', ''),
+    );
+  }
+};
+
+const handleMySQLException = (loggerName: string, error: any): void => {
+  // ER_DUP_ENTRY: unique constraint violation
+  if (error.code === 'ER_DUP_ENTRY') {
+    new Logger(loggerName).error(error);
+    throw new BadRequestException(error.sqlMessage);
+  }
 };
