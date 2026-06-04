@@ -1,15 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { CreateItemListInput } from './dto/inputs/create-item-list.input';
 import { UpdateItemListInput } from './dto/inputs/update-item-list.input';
 import { ItemList } from './entities/item-list.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { handleDBException } from 'src/common/helpers/errors.helper';
+import {
+  handleDBException,
+  isUuidException,
+} from 'src/common/helpers/errors.helper';
 import { User } from './../users/entities/user.entity';
 import { ListsService } from './../lists/lists.service';
 import { ItemsService } from './../items/items.service';
-import { List } from 'src/lists/entities/list.entity';
-import { PaginationArgs } from 'src/common/dto/args/pagination.args';
+import { List } from './../lists/entities/list.entity';
+import { PaginationArgs } from './../common/dto/args/pagination.args';
+import { removeNullFields } from 'src/common/helpers/dto.helper';
 
 @Injectable()
 export class ItemListService {
@@ -76,13 +81,52 @@ export class ItemListService {
     return await query.getMany();
   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} itemList`;
-  // }
+  async findOne(id: string, user: User): Promise<ItemList> {
+    isUuidException(id);
 
-  // update(id: number, updateItemListInput: UpdateItemListInput) {
-  //   return `This action updates a #${id} itemList`;
-  // }
+    const itemList: ItemList | null = await this.itemListRepository.findOne({
+      where: {
+        id,
+        ...(user && { list: { user: { id: user.id } } }),
+      },
+    });
+
+    if (!itemList)
+      throw new NotFoundException(`ItemList_id (${id}) not found or not yours`);
+
+    return itemList;
+  }
+
+  async update(
+    id: string,
+    dto: UpdateItemListInput,
+    user: User,
+  ): Promise<ItemList> {
+    const itemList: ItemList = await this.findOne(id, user);
+    const { listId, itemId, ...restDto } = dto;
+
+    try {
+      const cleanDto = removeNullFields(restDto, ['quantity', 'completed']);
+      Object.assign(
+        itemList,
+        cleanDto,
+        {
+          ...(listId && {
+            list: await this.listsService.findOne(listId, user),
+          }),
+          ...(itemId && {
+            item: await this.itemsService.findOne(itemId, user),
+          }),
+        },
+        { id },
+      );
+
+      return await this.itemListRepository.save(itemList);
+    } catch (error) {
+      handleDBException(`${this.loggerName}->update`, error);
+      throw error;
+    }
+  }
 
   // remove(id: number) {
   //   return `This action removes a #${id} itemList`;

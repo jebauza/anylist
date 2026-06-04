@@ -21,12 +21,11 @@ export class CreateItemListInput {
 
   @Field(() => Boolean, {
     nullable: true,
-    defaultValue: false,
     description: 'Completion status',
   })
   @IsBoolean()
-  @Transform(
-    ({ value }: { value: boolean | null | undefined }) => value ?? false,
+  @Transform(({ value }: { value: boolean | null | undefined }) =>
+    value === null ? false : value,
   )
-  completed: boolean = false;
+  completed?: boolean;
 }
