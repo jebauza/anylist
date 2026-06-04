@@ -8,6 +8,8 @@ import { handleDBException } from 'src/common/helpers/errors.helper';
 import { User } from './../users/entities/user.entity';
 import { ListsService } from './../lists/lists.service';
 import { ItemsService } from './../items/items.service';
+import { List } from 'src/lists/entities/list.entity';
+import { PaginationArgs } from 'src/common/dto/args/pagination.args';
 
 @Injectable()
 export class ItemListService {
@@ -42,8 +44,36 @@ export class ItemListService {
     }
   }
 
-  findAll() {
-    throw Error('This action returns all itemList');
+  async findAllByList(list: List): Promise<ItemList[]> {
+    return await this.itemListRepository.find({
+      where: { list: { id: list.id } },
+    });
+  }
+
+  async countItemsByList(list: List): Promise<number> {
+    return await this.itemListRepository.count({
+      where: { list: { id: list.id } },
+    });
+  }
+
+  async paginationByList(
+    dto: PaginationArgs,
+    list: List,
+    search?: string,
+  ): Promise<ItemList[]> {
+    const { offset, limit } = dto;
+
+    const query = this.itemListRepository
+      .createQueryBuilder()
+      .where(`"list_id" = :listId`, { listId: list.id })
+      .take(limit)
+      .skip(offset);
+
+    if (search) {
+      console.log(search);
+    }
+
+    return await query.getMany();
   }
 
   // findOne(id: number) {

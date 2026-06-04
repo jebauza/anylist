@@ -32,7 +32,7 @@ export class List {
   })
   user!: User;
 
-  @Field(() => [ItemList], { description: 'The items in the list' })
+  // @Field(() => [ItemList], { description: 'The items in the list' })
   @OneToMany(() => ItemList, (itemList) => itemList.list, { lazy: true })
   itemDetails!: ItemList[];
 }

@@ -37,7 +37,7 @@ export class ItemList {
   @Column('boolean', { name: 'completed', default: false })
   completed: boolean = false;
 
-  // @Field(() => Item, { description: 'Associated item' })
+  @Field(() => Item, { description: 'Associated item' })
   @ManyToOne(() => Item, (item) => item.listDetails, {
     nullable: false,
     lazy: true,
@@ -49,7 +49,7 @@ export class ItemList {
   })
   item!: Item;
 
-  // @Field(() => List, { description: 'Parent list' })
+  @Field(() => List, { description: 'Parent list' })
   @ManyToOne(() => List, (list) => list.itemDetails, {
     nullable: false,
     lazy: true,

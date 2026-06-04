@@ -10,6 +10,12 @@ type ItemList {
 
   """Completion status"""
   completed: Boolean
+
+  """Associated item"""
+  item: Item!
+
+  """Parent list"""
+  list: List!
 }
 
 type List {
@@ -21,9 +27,17 @@ type List {
 
   """The user that owns the list"""
   user: User!
+  items(
+    """Skip count (default: 0, min: 0)"""
+    offset: Int = 0
 
-  """The items in the list"""
-  itemDetails: [ItemList!]!
+    """Page size (default: 50, min: 1, max: 100)"""
+    limit: Int = 50
+
+    """Search text"""
+    search: String
+  ): [ItemList!]!
+  totalItems: Int!
 }
 
 type User {
@@ -108,7 +122,6 @@ type Query {
     search: String
   ): [List!]!
   list(id: ID!): List!
-  itemList: [ItemList!]!
 }
 
 """Valid roles for users"""
@@ -129,10 +142,10 @@ type Mutation {
   createList(createListInput: CreateListInput!): List!
   updateList(updateListInput: UpdateListInput!): List!
   removeList(id: ID!): List!
+  createItemList(createItemListInput: CreateItemListInput!): ItemList!
 
   """Execute seed"""
   executeSeed: Boolean!
-  createItemList(createItemListInput: CreateItemListInput!): ItemList!
 }
 
 input SignupInput {

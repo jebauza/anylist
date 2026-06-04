@@ -22,10 +22,10 @@ export class ItemListResolver {
     return this.itemListService.create(dto, authUser);
   }
 
-  @Query(() => [ItemList], { name: 'itemList' })
-  findAll() {
-    return this.itemListService.findAll();
-  }
+  // @Query(() => [ItemList], { name: 'itemList' })
+  // findAll(@CurrentUser() authUser: User) {
+  //   return this.itemListService.findAll();
+  // }
 
   // @Query(() => ItemList, { name: 'itemList' })
   // findOne(@Args('id', { type: () => Int }) id: number) {
