@@ -82,6 +82,39 @@ mutation {
 
 ---
 
+## Testing
+
+### Unit tests
+
+```bash
+npm run test
+```
+
+### End-to-end tests (e2e)
+
+The e2e tests run against a real PostgreSQL database using a dedicated `test` schema, so no test data ever touches the `public` schema. Each suite creates its own data in `beforeAll` and cleans it up in `afterAll`.
+
+#### Requirements
+
+- PostgreSQL running (the same Docker container used for development is enough).
+- A `.env` file with valid database credentials (same as for development).
+
+#### Run all e2e suites
+
+```bash
+npm run test:e2e
+```
+
+#### Run a single suite
+
+```bash
+npm run test:e2e -- --testPathPattern=auth
+```
+
+> The `test` schema is created automatically if it does not exist. The database user must have permission to create schemas.
+
+---
+
 ## Available scripts
 
 | Command              | Description                        |
@@ -90,5 +123,6 @@ mutation {
 | `npm run build`      | Compile the project                |
 | `npm run start:prod` | Start the compiled version         |
 | `npm run lint`       | Run ESLint                         |
-| `npm run test`       | Run tests                          |
-| `npm run test:cov`   | Run tests with coverage            |
+| `npm run test`       | Run unit tests                     |
+| `npm run test:cov`   | Run unit tests with coverage       |
+| `npm run test:e2e`   | Run end-to-end tests               |
