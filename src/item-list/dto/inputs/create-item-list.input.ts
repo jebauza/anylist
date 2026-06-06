@@ -1,6 +1,6 @@
 import { InputType, Int, Field, ID } from '@nestjs/graphql';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsInt, IsNotEmpty, IsUUID, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsUUID, Min } from 'class-validator';
 
 @InputType()
 export class CreateItemListInput {
@@ -23,6 +23,7 @@ export class CreateItemListInput {
     nullable: true,
     description: 'Completion status',
   })
+  @IsOptional()
   @IsBoolean()
   @Transform(({ value }: { value: boolean | null | undefined }) =>
     value === null ? false : value,

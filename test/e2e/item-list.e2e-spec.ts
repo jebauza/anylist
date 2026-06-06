@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 
 import { TestAppModule } from './setup/test-app.module';
 import { createTestApp } from './setup/create-test-app';
-import { gqlReq, isAccessDenied, FAKE_UUID } from './helpers/gql';
+import { gqlReq, assertGqlUnauthenticated, FAKE_UUID } from './helpers/gql';
 import { ensureTestSchema, cleanupUsers } from './helpers/db';
 import { makeUser, makeItem, makeList } from './helpers/factories';
 import { SIGNUP } from './operations/auth.operations';
@@ -124,10 +124,9 @@ describe('ItemListResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, CREATE_ITEM_LIST, {
+      await assertGqlUnauthenticated(app, CREATE_ITEM_LIST, {
         createItemListInput: { listId, itemId, quantity: 1 },
       });
-      expect(isAccessDenied(res, 'createItemList')).toBe(true);
     });
   });
 
@@ -174,8 +173,7 @@ describe('ItemListResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, ITEM_LIST, { id: itemListId });
-      expect(isAccessDenied(res, 'itemList')).toBe(true);
+      await assertGqlUnauthenticated(app, ITEM_LIST, { id: itemListId });
     });
   });
 
@@ -247,10 +245,9 @@ describe('ItemListResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, UPDATE_ITEM_LIST, {
+      await assertGqlUnauthenticated(app, UPDATE_ITEM_LIST, {
         updateItemListInput: { id: itemListId, quantity: 5 },
       });
-      expect(isAccessDenied(res, 'updateItemList')).toBe(true);
     });
   });
 });

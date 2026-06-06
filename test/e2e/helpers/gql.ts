@@ -74,20 +74,52 @@ export async function assertGqlValidationErrors(
   );
 }
 
-export function isAccessDenied(
-  res: {
-    status: number;
-    body: {
-      errors?: Array<{ message: string }>;
-      data?: Record<string, unknown> | null;
-    };
-  },
-  dataField?: string,
-): boolean {
-  if (res.status === 401) return true;
-  if (res.status === 200 && (res.body.errors?.length ?? 0) > 0) {
-    if (!dataField) return true;
-    return (res.body.data?.[dataField] ?? null) == null;
+export async function assertGqlUnauthenticated(
+  app: INestApplication,
+  operation: string,
+  variables: Record<string, unknown> = {},
+  validToken?: string,
+): Promise<void> {
+  const tokens: Array<string | undefined> = [undefined, 'token-not-valid'];
+
+  if (validToken) {
+    const tamperedToken =
+      validToken.slice(0, -1) + (validToken.endsWith('a') ? 'b' : 'a');
+    tokens.push(tamperedToken);
   }
-  return false;
+
+  for (const token of tokens) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { body } = await gqlReq(app, operation, variables, token).expect(200);
+    const errors = body.errors as GqlError[];
+
+    expect(body.data).toBeNull();
+    expect(errors).toBeDefined();
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].message).toBe('Unauthorized');
+    expect(errors[0].extensions.code).toBe('UNAUTHENTICATED');
+    expect(errors[0].extensions.originalError).toMatchObject({
+      message: 'Unauthorized',
+      statusCode: 401,
+    });
+  }
+}
+
+export async function assertGqlForbidden(
+  app: INestApplication,
+  operation: string,
+  variables: Record<string, unknown> = {},
+  token?: string,
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { body } = await gqlReq(app, operation, variables, token);
+  const errors = body.errors as GqlError[];
+
+  expect(errors).toBeDefined();
+  expect(errors.length).toBeGreaterThan(0);
+  expect(errors[0].extensions.code).toBe('FORBIDDEN');
+  expect(errors[0].extensions.originalError).toMatchObject({
+    statusCode: 403,
+    error: 'Forbidden',
+  });
 }

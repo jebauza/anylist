@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 
 import { TestAppModule } from './setup/test-app.module';
 import { createTestApp } from './setup/create-test-app';
-import { gqlReq, isAccessDenied, FAKE_UUID } from './helpers/gql';
+import { gqlReq, assertGqlUnauthenticated, assertGqlForbidden, FAKE_UUID } from './helpers/gql';
 import { ensureTestSchema, cleanupUsers, promoteToAdmin } from './helpers/db';
 import { makeUser } from './helpers/factories';
 import { SIGNUP, LOGIN } from './operations/auth.operations';
@@ -75,13 +75,11 @@ describe('UsersResolver (e2e)', () => {
     });
 
     it('returns forbidden error when requested by a regular user', async () => {
-      const res = await gqlReq(app, USERS, { limit: 10 }, regularToken);
-      expect(isAccessDenied(res, 'users')).toBe(true);
+      await assertGqlForbidden(app, USERS, { limit: 10 }, regularToken);
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, USERS, { limit: 10 });
-      expect(isAccessDenied(res, 'users')).toBe(true);
+      await assertGqlUnauthenticated(app, USERS, { limit: 10 });
     });
   });
 
@@ -113,8 +111,7 @@ describe('UsersResolver (e2e)', () => {
     });
 
     it('returns forbidden error when requested by a regular user', async () => {
-      const res = await gqlReq(app, USER, { id: regularId }, regularToken);
-      expect(isAccessDenied(res, 'user')).toBe(true);
+      await assertGqlForbidden(app, USER, { id: regularId }, regularToken);
     });
   });
 
@@ -134,13 +131,11 @@ describe('UsersResolver (e2e)', () => {
     });
 
     it('returns forbidden error when called by a regular user', async () => {
-      const res = await gqlReq(app, BLOCK_USER, { id: targetId }, regularToken);
-      expect(isAccessDenied(res, 'blockUser')).toBe(true);
+      await assertGqlForbidden(app, BLOCK_USER, { id: targetId }, regularToken);
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, BLOCK_USER, { id: targetId });
-      expect(isAccessDenied(res, 'blockUser')).toBe(true);
+      await assertGqlUnauthenticated(app, BLOCK_USER, { id: targetId });
     });
   });
 
@@ -173,13 +168,12 @@ describe('UsersResolver (e2e)', () => {
     });
 
     it('returns forbidden error when called by a regular user', async () => {
-      const res = await gqlReq(
+      await assertGqlForbidden(
         app,
         UPDATE_USER,
         { updateUserInput: { id: regularId, fullName: 'Hacker' } },
         regularToken,
       );
-      expect(isAccessDenied(res, 'updateUser')).toBe(true);
     });
   });
 });

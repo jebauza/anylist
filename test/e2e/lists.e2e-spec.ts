@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 
 import { TestAppModule } from './setup/test-app.module';
 import { createTestApp } from './setup/create-test-app';
-import { gqlReq, isAccessDenied, FAKE_UUID } from './helpers/gql';
+import { gqlReq, assertGqlUnauthenticated, FAKE_UUID } from './helpers/gql';
 import { ensureTestSchema, cleanupUsers } from './helpers/db';
 import { makeUser, makeList } from './helpers/factories';
 import { SIGNUP } from './operations/auth.operations';
@@ -69,10 +69,9 @@ describe('ListsResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, CREATE_LIST, {
+      await assertGqlUnauthenticated(app, CREATE_LIST, {
         createListInput: makeList(),
       });
-      expect(isAccessDenied(res, 'createList')).toBe(true);
     });
   });
 
@@ -105,8 +104,7 @@ describe('ListsResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, LISTS, { limit: 10 });
-      expect(isAccessDenied(res, 'lists')).toBe(true);
+      await assertGqlUnauthenticated(app, LISTS, { limit: 10 });
     });
   });
 
@@ -149,8 +147,7 @@ describe('ListsResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, LIST, { id: listId });
-      expect(isAccessDenied(res, 'list')).toBe(true);
+      await assertGqlUnauthenticated(app, LIST, { id: listId });
     });
   });
 
@@ -183,10 +180,9 @@ describe('ListsResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, UPDATE_LIST, {
+      await assertGqlUnauthenticated(app, UPDATE_LIST, {
         updateListInput: { id: listId, name: 'Hacked' },
       });
-      expect(isAccessDenied(res, 'updateList')).toBe(true);
     });
   });
 
@@ -230,8 +226,7 @@ describe('ListsResolver (e2e)', () => {
     });
 
     it('denies access without a token', async () => {
-      const res = await gqlReq(app, REMOVE_LIST, { id: FAKE_UUID });
-      expect(isAccessDenied(res, 'removeList')).toBe(true);
+      await assertGqlUnauthenticated(app, REMOVE_LIST, { id: FAKE_UUID });
     });
   });
 });

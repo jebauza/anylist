@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 
 import { TestAppModule } from '../setup/test-app.module';
 import { createTestApp } from '../setup/create-test-app';
-import { gqlReq, isAccessDenied } from '../helpers/gql';
+import { gqlReq, assertGqlUnauthenticated } from '../helpers/gql';
 import { ensureTestSchema, cleanupUsers } from '../helpers/db';
 import { makeUser } from '../helpers/factories';
 import { SIGNUP, LOGIN, REVALIDATE_TOKEN } from '../operations/auth.operations';
@@ -29,13 +29,11 @@ describe('revaliteToken query', () => {
 
     dataSource = moduleFixture.get<DataSource>(DataSource);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { body: signupBody } = await gqlReq(app, SIGNUP, {
       signupInput: credentials,
     });
     userId = signupBody.data.signup.user.id as string;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { body: loginBody } = await gqlReq(app, LOGIN, {
       loginInput: { email: credentials.email, password: credentials.password },
     });
@@ -47,18 +45,15 @@ describe('revaliteToken query', () => {
     await app.close();
   });
 
-  it('returns a fresh JWT token for an authenticated user', async () => {
-    const { body } = await gqlReq(app, REVALIDATE_TOKEN, {}, token).expect(
-      200,
-    );
+  it('200 -returns a fresh JWT token for an authenticated user', async () => {
+    const { body } = await gqlReq(app, REVALIDATE_TOKEN, {}, token).expect(200);
 
     expect(body.errors).toBeUndefined();
     expect(body.data.revaliteToken.token).toBeDefined();
     expect(body.data.revaliteToken.user.email).toBe(credentials.email);
   });
 
-  it('denies access without a token', async () => {
-    const res = await gqlReq(app, REVALIDATE_TOKEN);
-    expect(isAccessDenied(res, 'revaliteToken')).toBe(true);
+  it('401 - denies access without a token', async () => {
+    await assertGqlUnauthenticated(app, REVALIDATE_TOKEN, {}, token);
   });
 });

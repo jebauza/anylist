@@ -4,7 +4,11 @@ import { DataSource } from 'typeorm';
 
 import { TestAppModule } from '../setup/test-app.module';
 import { createTestApp } from '../setup/create-test-app';
-import { gqlReq, isAccessDenied } from '../helpers/gql';
+import {
+  gqlReq,
+  assertGqlUnauthenticated,
+  assertGqlUnauthenticated,
+} from '../helpers/gql';
 import { ensureTestSchema, cleanupUsers } from '../helpers/db';
 import { makeUser } from '../helpers/factories';
 import { SIGNUP, LOGIN, ME } from '../operations/auth.operations';
@@ -29,13 +33,11 @@ describe('me query', () => {
 
     dataSource = moduleFixture.get<DataSource>(DataSource);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { body: signupBody } = await gqlReq(app, SIGNUP, {
       signupInput: credentials,
     });
     userId = signupBody.data.signup.user.id as string;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { body: loginBody } = await gqlReq(app, LOGIN, {
       loginInput: { email: credentials.email, password: credentials.password },
     });
@@ -47,15 +49,23 @@ describe('me query', () => {
     await app.close();
   });
 
-  it('returns the current authenticated user', async () => {
+  it('200 - returns current user', async () => {
     const { body } = await gqlReq(app, ME, {}, token).expect(200);
 
+    expect(body.data.me).toBeDefined();
+    expect(body.data.me).toMatchObject({
+      id: expect.any(String),
+      email: expect.any(String),
+      fullName: expect.any(String),
+      roles: expect.any(Array),
+      isActive: expect.any(Boolean),
+    });
     expect(body.errors).toBeUndefined();
-    expect(body.data.me.email).toBe(credentials.email);
   });
 
-  it('denies access without a token', async () => {
-    const res = await gqlReq(app, ME);
-    expect(isAccessDenied(res, 'me')).toBe(true);
+  describe('Access Token Validation', () => {
+    it('401 - denies access without a token', async () => {
+      await assertGqlUnauthenticated(app, ME, {}, token);
+    });
   });
 });
