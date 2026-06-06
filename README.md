@@ -108,21 +108,29 @@ npm run test:e2e
 #### Run a single suite
 
 ```bash
-npm run test:e2e -- --testPathPattern=auth
+npm run test:e2e --testPathPatterns="auth/signup"
 ```
 
 > The `test` schema is created automatically if it does not exist. The database user must have permission to create schemas.
+
+#### Verbose logging
+
+By default, NestJS logs are suppressed during e2e tests to keep the output clean. To enable them (useful when debugging a failing test), set `TEST_VERBOSE=true` in your `.env`:
+
+```env
+TEST_VERBOSE=true
+```
 
 ---
 
 ## Available scripts
 
-| Command              | Description                        |
-| -------------------- | ---------------------------------- |
-| `npm run start:dev`  | Start in development mode (watch)  |
-| `npm run build`      | Compile the project                |
-| `npm run start:prod` | Start the compiled version         |
-| `npm run lint`       | Run ESLint                         |
-| `npm run test`       | Run unit tests                     |
-| `npm run test:cov`   | Run unit tests with coverage       |
-| `npm run test:e2e`   | Run end-to-end tests               |
+| Command              | Description                       |
+| -------------------- | --------------------------------- |
+| `npm run start:dev`  | Start in development mode (watch) |
+| `npm run build`      | Compile the project               |
+| `npm run start:prod` | Start the compiled version        |
+| `npm run lint`       | Run ESLint                        |
+| `npm run test`       | Run unit tests                    |
+| `npm run test:cov`   | Run unit tests with coverage      |
+| `npm run test:e2e`   | Run end-to-end tests              |

@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 
 import { TestAppModule } from './setup/test-app.module';
+import { createTestApp } from './setup/create-test-app';
 import { gqlReq, isAccessDenied, FAKE_UUID } from './helpers/gql';
 import { ensureTestSchema, cleanupUsers } from './helpers/db';
 import { makeUser, makeList } from './helpers/factories';
@@ -32,7 +33,7 @@ describe('ListsResolver (e2e)', () => {
       imports: [TestAppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = createTestApp(moduleFixture);
     await app.init();
 
     dataSource = moduleFixture.get<DataSource>(DataSource);

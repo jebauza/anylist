@@ -45,9 +45,8 @@ export async function cleanupUsers(
       `DELETE FROM ${TEST_SCHEMA}.items WHERE user_id = $1`,
       [id],
     );
-    await dataSource.query(
-      `DELETE FROM ${TEST_SCHEMA}.users WHERE id = $1`,
-      [id],
-    );
+    await dataSource.query(`DELETE FROM ${TEST_SCHEMA}.users WHERE id = $1`, [
+      id,
+    ]);
   }
 }

@@ -144,7 +144,7 @@ export class UsersService {
   }
 
   remove(id: string) {
-    throw new Error(`UsersService-remove not implemented. id: ${id}`);
+    throw new Error(`${this.loggerName}-remove not implemented. id: ${id}`);
   }
 
   async createMany(data: CreateUserInput[], createdBy?: User): Promise<void> {
