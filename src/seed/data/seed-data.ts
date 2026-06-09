@@ -8,6 +8,10 @@ interface SeedUser {
   isActive?: boolean;
 }
 
+interface SeedIList {
+  name: string;
+}
+
 interface SeedItem {
   name: string;
   unit?: string;
@@ -15,6 +19,7 @@ interface SeedItem {
 
 interface SeedData {
   users: SeedUser[];
+  lists: SeedIList[];
   items: SeedItem[];
 }
 
@@ -46,6 +51,16 @@ export const initialData: SeedData = {
       password: 'Abc123',
       fullName: 'Test',
     },
+  ],
+
+  lists: [
+    { name: 'mondeys' },
+    { name: 'tuesdays' },
+    { name: 'wednesdays' },
+    { name: 'thursdays' },
+    { name: 'fridays' },
+    { name: 'saturdays' },
+    { name: 'sundays' },
   ],
 
   items: [

@@ -99,4 +99,23 @@ export class ListsService {
       where: { user: { id: user.id } },
     });
   }
+
+  async createMany(data: CreateListInput[], createdBy: User): Promise<void> {
+    const CHUNK_SIZE = 500;
+
+    try {
+      const lists = data.map((dto) =>
+        this.listsRepository.create({
+          ...dto,
+          user: createdBy,
+        }),
+      );
+
+      for (let i = 0; i < lists.length; i += CHUNK_SIZE) {
+        await this.listsRepository.insert(lists.slice(i, i + CHUNK_SIZE));
+      }
+    } catch (error) {
+      handleDBException(`${this.loggerName}->createMany`, error);
+    }
+  }
 }

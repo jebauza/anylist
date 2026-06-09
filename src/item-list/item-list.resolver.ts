@@ -30,7 +30,7 @@ export class ItemListResolver {
     return this.itemListService.findOne(id, authUser);
   }
 
-  @Mutation(() => ItemList)
+  @Mutation(() => ItemList, { name: 'updateItemList' })
   updateItemList(
     @CurrentUser() authUser: User,
     @Args('updateItemListInput') dto: UpdateItemListInput,

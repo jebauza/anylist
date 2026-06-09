@@ -8,13 +8,13 @@ import { ItemList } from './entities/item-list.entity';
 import {
   handleDBException,
   isUuidException,
-} from 'src/common/helpers/errors.helper';
+} from './../common/helpers/errors.helper';
 import { User } from './../users/entities/user.entity';
 import { ListsService } from './../lists/lists.service';
 import { ItemsService } from './../items/items.service';
 import { List } from './../lists/entities/list.entity';
 import { PaginationArgs } from './../common/dto/args/pagination.args';
-import { removeNullFields } from 'src/common/helpers/dto.helper';
+import { removeNullFields } from './../common/helpers/dto.helper';
 
 @Injectable()
 export class ItemListService {
@@ -104,9 +104,22 @@ export class ItemListService {
   ): Promise<ItemList> {
     const itemList: ItemList = await this.findOne(id, user);
     const { listId, itemId, ...restDto } = dto;
+    const cleanDto = removeNullFields(restDto, ['quantity', 'completed']);
 
     try {
-      const cleanDto = removeNullFields(restDto, ['quantity', 'completed']);
+      // const queryBuilder = this.itemListRepository
+      //   .createQueryBuilder()
+      //   .update()
+      //   .set({ ...cleanDto, id })
+      //   .where('id = :id', { id });
+
+      // if (listId) queryBuilder.set({ list: { id: listId } });
+      // if (itemId) queryBuilder.set({ item: { id: itemId } });
+
+      // await queryBuilder.execute();
+
+      // return this.findOne(id, user);
+
       Object.assign(
         itemList,
         cleanDto,
